@@ -10,7 +10,6 @@ class ElementoTipoSimpleInmediato(Elemento):
     def __init__(self, nombre, tipo):
         self.nombre     =   nombre
         self.tipo       =   tipo
-
     def get_xml_schema(self):
         plantilla="<xsd:element name={0} type={1}/>"
         return plantilla.format(self.nombre, self.tipo)
@@ -18,7 +17,39 @@ class ElementoTipoSimpleInmediato(Elemento):
         plantilla="Elemento <{0}> es de tipo {1}"
         cadena=plantilla.format(self.nombre, self.tipo.get_tipo_con_prefijo())
         return cadena
-    
+
+class ElementoRestriccionEnTipoNumerico(Elemento):
+    def __init__(self, nombre, nombre_tipo_base, nombre_tipo=None):
+        self.nombre=nombre
+        if nombre_tipo==None:
+            self.nombre_tipo="tipo"+self.nombre
+        self.minimo=None
+        self.maximo=None
+        self.nombre_tipo_base=nombre_tipo_base
+    def set_minimo(self, minimo):
+        self.minimo=minimo
+    def set_maximo(self, maximo):
+        self.maximo=maximo
+    def get_xml_schema(self):
+        plantilla="""
+        <xsd:simpleType name="{0}">
+            <xsd:restriction base="{1}">
+            {2}
+            </xsd:restriction>
+        </xsd:simpleType>
+        """
+        plantilla_min="<xsd:minInclusive value=\"{0}\"/>\n"
+        plantilla_max="<xsd:maxInclusive value=\"{0}\"/>"
+        restricciones=""
+        if self.minimo!=None:
+            restricciones = restricciones +plantilla_min.format(self.minimo)
+        if self.maximo!=None:
+            restricciones = restricciones +plantilla_max.format(self.maximo)
+        cad=plantilla.format(self.nombre_tipo, self.nombre_tipo_base, restricciones)
+        return cad
+    def get_descripcion_textual(self):
+        pass
+        
 
 class GeneradorCantidadTotalConTiposSimples(object):
     @staticmethod
@@ -43,7 +74,6 @@ class TipoW3C(object):
         pass
 
 class Byte(TipoW3C):
-    
     def get_descripcion_textual(self):
         descr="entero de 8 bits"
         return descr
@@ -56,7 +86,23 @@ class Short(TipoW3C):
         descr="entero de 16 bits"
         return descr
     def get_tipo(self):
-        tipo="byte"
+        tipo="short"
+        return tipo
+
+class Int(TipoW3C):
+    def get_descripcion_textual(self):
+        descr="entero de 32 bits"
+        return descr
+    def get_tipo(self):
+        tipo="int"
+        return tipo
+
+class Long(TipoW3C):
+    def get_descripcion_textual(self):
+        descr="entero de 64 bits"
+        return descr
+    def get_tipo(self):
+        tipo="long"
         return tipo
 
 
@@ -67,3 +113,7 @@ class String(TipoW3C):
     def get_tipo(self):
         tipo="string"
         return tipo
+
+class TipoRestriccionNumericaMinMax(TipoW3C):
+    def __init__(self, tipo_numerico):
+        self.tipo_numerico=tipo_numerico
